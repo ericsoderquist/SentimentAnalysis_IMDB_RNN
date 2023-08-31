@@ -23,7 +23,7 @@ This project aims to transcend linguistic barriers by providing an accurate mode
 3. Run the script
 
 ## Usage
-\`\`python final_refactored.py\`\`
+\`\`python SentimentAnalysis_IMDB_RNN.py\`\`
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

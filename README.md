@@ -1,4 +1,5 @@
 
+
 # Sentiment Analysis on IMDB Reviews using RNNs
 
 ## Author
@@ -7,12 +8,18 @@ Eric Soderquist
 ## Introduction
 This repository contains a Python implementation of a Recurrent Neural Network (RNN) model for sentiment analysis on the IMDB dataset. Sentiment analysis is a subfield of semantic analysis that focuses on the task of identifying subjective information from text data. Understanding the sentiments expressed in texts like reviews, tweets, or comments can be pivotal for businesses, policymakers, and individuals alike. The model utilizes different configurations of hyperparameters to identify the best set for maximizing classification accuracy.
 
-
+<a id="theoretical-background"></a>
 <details>
 <summary><strong>Theoretical Background</strong></summary>
 
 ### Recurrent Neural Networks (RNNs)
 Recurrent Neural Networks (RNNs) are a class of artificial neural networks designed for sequence-based data. Unlike traditional feedforward neural networks, RNNs possess recurrent connections that loop back within the network. This unique architecture allows the network to maintain a 'state' or 'memory' across the sequence, which is invaluable for tasks such as natural language processing, time-series prediction, and, notably, semantic and sentiment analysis.
+
+The Recurrent Neural Network (RNN) model used in this project consists of the following layers:
+
+- **Input Layer**: Takes tokenized sequences as input.
+- **Hidden Layers**: Contains RNN units with activation functions to capture sequential dependencies.
+- **Output Layer**: Uses a sigmoid activation function to output a sentiment score between 0 and 1.
 
 #### The Basic Recurrent Unit
 The fundamental equation that governs the behavior of a basic recurrent unit is:
@@ -143,6 +150,16 @@ The best-performing model was achieved with the following hyperparameters:
 - Batch size: 32
 - Accuracy: 1.0
 
+## Performance Metrics
+
+The model's performance is evaluated using the following metrics:
+
+- **Accuracy**: Measures the proportion of correctly classified samples.
+- **Precision**: Measures the proportion of true positive samples among the samples predicted as positive.
+- **Recall**: Measures the proportion of true positive samples among all actual positive samples.
+- **F1-Score**: Harmonic mean of Precision and Recall, providing a balanced view of the model's performance.
+- **AUC**: Area Under the Receiver Operating Characteristic Curve, measuring the model's ability to distinguish between classes.
+
 ## Visualization
 ![Hyperparameter Testing: Accuracy by Layer Configuration and Learning Rate](/visualization.jpg)
 
@@ -170,3 +187,4 @@ One such application is in the development of assistive technologies for neurodi
 Similarly, these technologies can significantly benefit people who are learning English as a second language. Accurate sentiment and semantic analysis can help in developing advanced translation aids that capture not just the literal meaning of sentences but also the emotional nuances and cultural context, making the language-learning journey more enriching and effective.
 
 These applications underscore the broader societal impact of advancements in this field, driving home the importance of continued research and development.
+

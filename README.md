@@ -108,7 +108,6 @@ Special thanks to the University of Illinois Urbana-Champaign for the academic e
 ## References and Further Reading
 
 - [Understanding LSTM Networks](https://colah.github.io/posts/2015-08-Understanding-LSTMs/)
-- [Sentiment Analysis: An Overview](https://arxiv.org/abs/1912.01612)
 
 ## Visual Aids
 

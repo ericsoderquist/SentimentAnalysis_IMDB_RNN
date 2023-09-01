@@ -1,9 +1,8 @@
 """
 Sentiment Analysis of IMDB reviews using Hand-crafted RNN.
-Developed as part of a class assignment at the University of Illinois Urbana-Champaign.
 Author: Eric Soderquist
-Course: PSYC 489: Neural Network Modeling Lab
 """
+
 # Standard Library Imports
 import os
 import re
@@ -12,313 +11,341 @@ import random
 from collections import Counter
 from contextlib import closing
 from multiprocessing import Pool
+
 # Third-Party Imports
 import numpy as np
 import requests
 
-def get_downloads_folder() -> str:
+class SentimentAnalysisRNN:
     """
-    Get the downloads folder path from the system.
-    The function expands the user's home directory and appends "Downloads" to obtain the path.
-    
-    Returns:
-        str: The path to the downloads folder.
+    A class for performing sentiment analysis on IMDB reviews using a hand-crafted RNN.
     """
-    user_home = os.path.expanduser('~')
-    downloads_folder = os.path.join(user_home, 'Downloads')
-    return downloads_folder
-def download_and_extract_data(url, destination):
-    # Check if the dataset is already downloaded and extracted
-    if os.path.exists(os.path.join(destination, "aclImdb")):
-        print("Dataset already exists in the specified directory.")
-        return
-    file_name = url.split("/")[-1]
-    file_path = os.path.join(destination, file_name)
-    print("Downloading dataset from {}...".format(url))
-    with closing(requests.get(url, stream=True, verify=False)) as response:
-        total_length = int(response.headers.get("content-length"))
-        with open(file_path, "wb") as f:
-            for chunk in response.iter_content(chunk_size=1024):
-                if chunk:
-                    f.write(chunk)
-    print("Dataset downloaded successfully.")
-    print("Extracting dataset...")
-    with tarfile.open(file_path, "r:gz") as tar:
-        for member in tar.getmembers():
-            if "aclImdb" in member.name:
-                member.name = os.path.relpath(member.name, "aclImdb")  # Remove the 'aclImdb' prefix from the path
-                tar.extract(member, path=destination)
-    print("Dataset extracted successfully.")
+    def __init__(self):
+        """
+        Initializes the SentimentAnalysisRNN object.
+        """
+        self.vocab_size = 10000  # The number of most frequent words to keep in the vocabulary
+        self.embedding_size = 300  # The size of the word embeddings
+        self.hidden_size = 128  # The size of the hidden state of the RNN
+        self.learning_rate = 0.001  # The learning rate for the optimizer
+        self.batch_size = 32  # The batch size for training
+        self.num_epochs = 10  # The number of epochs to train for
+        self.train_data = None  # The training data
+        self.test_data = None  # The test data
+        self.word_to_index = None  # A dictionary mapping words to their indices in the vocabulary
+        self.index_to_word = None  # A dictionary mapping indices in the vocabulary to words
+        self.model = None  # The RNN model
 
-"""
-This code defines a class 'Neuron' which models a single neuron in a neural network. 
-It is initialized with weights and a bias and has three methods: activation_function(), forward(), 
-and update_weights(). The activation_function() determines how a neuron responds to its inputs, while forward() 
-calculates the weighted sum of its inputs and passes them through the activation_function(). Finally, 
-update_weights() adjusts the neuron's weights and bias according to the delta and learning rate.
-"""
-class Neuron:
-    def __init__(self, weights, bias):
-        self.weights = weights
-        self.bias = bias
+    def get_downloads_folder(self) -> str:
+        """
+        Get the downloads folder path from the system.
+        The function expands the user's home directory and appends "Downloads" to obtain the path.
 
-    def activation_function(self, x):
-        return max(0, x)  # ReLU activation function
+        Returns:
+            str: The path to the downloads folder.
+        """
+        user_home = os.path.expanduser('~')
+        downloads_folder = os.path.join(user_home, 'Downloads')
+        return downloads_folder
 
-    def forward(self, inputs):
-        weighted_sum = sum(x * w for x, w in zip(inputs, self.weights)) + self.bias
-        return self.activation_function(weighted_sum)
+    def download_and_extract_data(self, url: str, destination: str) -> None:
+        """
+        Downloads and extracts the IMDB dataset from the specified URL to the specified destination.
 
-    def update_weights(self, inputs, delta, learning_rate):
-        new_weights = []
-        for x, w in zip(inputs, self.weights):
-            new_weights.append(w - learning_rate * delta * x)
-        self.weights = new_weights
-        self.bias -= learning_rate * delta
+        Args:
+            url (str): The URL of the dataset.
+            destination (str): The destination directory to download and extract the dataset to.
 
-"""This is a class that implements a recurrent neural network (RNN) algorithm. 
-The class takes in parameters such as the input size, hidden layer size, output size, and learning rate. 
-The class then initializes weights and biases for the hidden layers and the output layer. 
-The class has methods such as sigmoid, softmax, forward, and backward. 
-The sigmoid and softmax methods are used to calculate the activation functions of the RNN. 
-The forward method receives input and calculates the output values through the weights and biases of the neural network. 
-The backward method calculates the errors between the output and target values and adjusts the weights and biases accordingly."""
-class RecurrentNeuralNetwork:
-    def __init__(self, input_size, hidden_layer_size, output_size, learning_rate):
-        self.input_size = input_size
-        self.hidden_layer_size = hidden_layer_size
-        self.output_size = output_size
-        self.learning_rate = learning_rate
+        Returns:
+            None
+        """
+        # Check if the dataset is already downloaded and extracted
+        if os.path.exists(os.path.join(destination, "aclImdb")):
+            print("Dataset already exists in the specified directory.")
+            return
 
-        self.weights_ih = np.random.randn(hidden_layer_size, input_size) * 0.01
-        self.weights_hh = np.random.randn(hidden_layer_size, hidden_layer_size) * 0.01
-        self.weights_ho = np.random.randn(output_size, hidden_layer_size) * 0.01
+        file_name = url.split("/")[-1]
+        file_path = os.path.join(destination, file_name)
 
-        self.biases_h = np.zeros((hidden_layer_size, 1))
-        self.biases_o = np.zeros((output_size, 1))
+        print("Downloading dataset from {}...".format(url))
 
-    def sigmoid(self, x):
-        return 1 / (1 + np.exp(-x))
+        with closing(requests.get(url, stream=True, verify=False)) as response:
+            total_length = int(response.headers.get("content-length"))
 
-    def sigmoid_derivative(self, x):
-        return x * (1 - x)
+            with open(file_path, "wb") as f:
+                for chunk in response.iter_content(chunk_size=1024):
+                    if chunk:
+                        f.write(chunk)
 
-    def softmax(self, x):
-        exp_x = np.exp(x - np.max(x))
-        return exp_x / np.sum(exp_x, axis=0)
+        print("Extracting dataset to {}...".format(destination))
 
-    def forward(self, inputs):
-        hidden_layer_outputs = []
-        hidden = np.zeros((self.hidden_layer_size, 1))
-        for i in range(len(inputs)):
-            input_t = inputs[i].reshape(-1, 1)
-            hidden = np.tanh(np.dot(self.weights_ih, input_t) + np.dot(self.weights_hh, hidden) + self.biases_h)
-            hidden_layer_outputs.append(hidden)
-        output = self.softmax(np.dot(self.weights_ho, hidden) + self.biases_o)
-        return output, hidden_layer_outputs
+        with tarfile.open(file_path, "r:gz") as tar:
+            tar.extractall(destination)
 
-    def backward(self, inputs, hidden_layer_outputs, output, target):
-        output_error = output - target
-        delta_weights_ho = np.dot(output_error, hidden_layer_outputs[-1].T)
-        delta_biases_o = output_error
+        os.remove(file_path)
 
-        delta_hidden = np.dot(self.weights_ho.T, output_error)
-        for t in reversed(range(len(inputs))):
-            input_t = inputs[t].reshape(-1, 1)
-            hidden_derivative = (1 - hidden_layer_outputs[t] ** 2)
-            delta_hidden_t = delta_hidden * hidden_derivative
+    def preprocess_data(self, data_dir: str) -> None:
+        """
+        Preprocesses the IMDB dataset by tokenizing the reviews and creating the vocabulary.
 
-            if t > 0:
-                delta_weights_hh = np.dot(delta_hidden_t, hidden_layer_outputs[t - 1].T)
-            else:
-                delta_weights_hh = np.zeros_like(self.weights_hh)
+        Args:
+            data_dir (str): The directory containing the IMDB dataset.
 
-            delta_weights_ih = np.dot(delta_hidden_t, input_t.T)
-            delta_biases_h = delta_hidden_t
+        Returns:
+            None
+        """
+        # Load the reviews and labels from the dataset
+        train_reviews, train_labels = self.load_data(os.path.join(data_dir, "train"))
+        test_reviews, test_labels = self.load_data(os.path.join(data_dir, "test"))
 
-            delta_hidden = np.dot(self.weights_hh, delta_hidden_t)
+        # Tokenize the reviews
+        train_reviews = [self.tokenize(review) for review in train_reviews]
+        test_reviews = [self.tokenize(review) for review in test_reviews]
 
-            self.weights_ih -= self.learning_rate * delta_weights_ih
-            self.weights_hh -= self.learning_rate * delta_weights_hh
-            self.biases_h -= self.learning_rate * delta_biases_h
+        # Create the vocabulary
+        self.word_to_index, self.index_to_word = self.create_vocabulary(train_reviews)
 
-        self.weights_ho -= self.learning_rate * delta_weights_ho
-        self.biases_o -= self.learning_rate * delta_biases_o
+        # Convert the reviews to sequences of indices
+        train_reviews = [self.convert_to_indices(review) for review in train_reviews]
+        test_reviews = [self.convert_to_indices(review) for review in test_reviews]
 
-"""The preprocess_data function takes two parameters, data and max_features which indicates the maximum number of features for the embedding.
-First, the function cleans the text by removing any HTML tags and punctuation and by making all words lowercase. 
-It then counts the words and bigrams in the text to determine the most frequent words or bigrams. 
-Next, the most common words and bigrams are collected and stored in a word_to_index dictionary. 
-Finally, a feature vector is created by assigning a value of 1 to any of the most frequent words/bigrams found in the text. 
-The feature vector is then stored along with the corresponding label in a list. 
-This list is what is returned by the function."""
-def preprocess_data(data, max_features):
-    def clean_text(text):
-        text = re.sub('<.*?>', ' ', text)
-        text = re.sub('[^a-zA-Z]', ' ', text)
-        text = text.lower()
-        words = text.split()
-        return words
+        # Pad the sequences to a fixed length
+        train_reviews = self.pad_sequences(train_reviews)
+        test_reviews = self.pad_sequences(test_reviews)
 
-    def get_bigrams(words):
-        return [f"{w1}_{w2}" for w1, w2 in zip(words[:-1], words[1:])]
+        # Convert the labels to numpy arrays
+        train_labels = np.array(train_labels)
+        test_labels = np.array(test_labels)
 
-    word_counts = Counter()
-    for text, _ in data:
-        words = clean_text(text)
-        word_counts.update(words)
-        bigrams = get_bigrams(words)
-        word_counts.update(bigrams)
+        # Save the preprocessed data
+        self.train_data = (train_reviews, train_labels)
+        self.test_data = (test_reviews, test_labels)
 
-    most_common_words = [word for word, _ in word_counts.most_common(max_features)]
-    word_to_index = {word: i for i, word in enumerate(most_common_words)}
+    def load_data(self, data_dir: str) -> tuple:
+        """
+        Loads the reviews and labels from the IMDB dataset.
 
-    processed_data = []
-    for text, label in data:
-        words = clean_text(text)
-        bigrams = get_bigrams(words)
-        tokens = words + bigrams
-        indices = [word_to_index.get(token, -1) for token in tokens]
-        indices = [i for i in indices if i >= 0]
-        feature_vector = [0] * max_features
-        for index in indices:
-            feature_vector[index] = 1
-        processed_data.append((feature_vector, label))
-    return processed_data
+        Args:
+            data_dir (str): The directory containing the IMDB dataset.
 
-"""The function "load_data" loads movie reviews from a given data directory. 
-It takes two parameters - the data directory and a subset size (optional). 
-It then extracts positive and negative reviews from the train and test subdirectories and 
-returns a tuple containing a list of tuples (text and label) for the train and test data."""
-def load_data(data_dir, subset_size=None):
-    def load_reviews_from_dir(directory, label):
+        Returns:
+            tuple: A tuple containing the reviews and labels.
+        """
         reviews = []
-        for filename in os.listdir(directory):
-            with open(os.path.join(directory, filename), 'r', encoding='utf-8') as file:
-                text = file.read()
-                reviews.append((text, label))
-            if subset_size is not None and len(reviews) >= subset_size:
-                break # Stop loading reviews if we've reached the subset size
-            return reviews
+        labels = []
 
-    train_pos_dir = os.path.join(data_dir, 'train', 'pos')
-    train_neg_dir = os.path.join(data_dir, 'train', 'neg')
-    test_pos_dir = os.path.join(data_dir, 'test', 'pos')
-    test_neg_dir = os.path.join(data_dir, 'test', 'neg')
+        for label in ["pos", "neg"]:
+            label_dir = os.path.join(data_dir, label)
 
-    train_pos = load_reviews_from_dir(train_pos_dir, 1)
-    train_neg = load_reviews_from_dir(train_neg_dir, 0)
-    test_pos = load_reviews_from_dir(test_pos_dir, 1)
-    test_neg = load_reviews_from_dir(test_neg_dir, 0)
+            for file_name in os.listdir(label_dir):
+                file_path = os.path.join(label_dir, file_name)
 
-    train_data = train_pos + train_neg
-    test_data = test_pos + test_neg
-    return train_data, test_data
+                with open(file_path, "r", encoding="utf-8") as f:
+                    review = f.read()
 
-"""This function is used to train the specified network using the given training data. 
-The parameters to this function are the network, training data, learning rate, total epochs and batch size. 
-The network is trained by shuffling the data and iterating over the batches of data. 
-For each batch, the input data and target data is split and then processed in a separate process using the pool.map() function. 
-The learning rate is applied to the network after each batch is processed. 
-The function prints out the status of the epochs that have been completed."""
-def train_network(network, training_data, learning_rate, epochs, batch_size):
-    num_batches = len(training_data) // batch_size
-    pool = Pool()
-    for epoch in range(epochs):
-        random.shuffle(training_data)
-        for batch_idx in range(num_batches):
-            batch = training_data[batch_idx * batch_size: (batch_idx + 1) * batch_size]
-            inputs = []
-            targets = []
-            for input_data, target_data in batch:
-                inputs.append(input_data)
-                targets.append([1 if i == target_data else 0 for i in range(2)])
-            pool.map(process_batch, [(network, input_data, target_data, learning_rate) for input_data, target_data in zip(inputs, targets)])
+                reviews.append(review)
+                labels.append(1 if label == "pos" else 0)
 
-        print(f"Epoch {epoch + 1} completed")
+        return reviews, labels
 
-"""
-This function takes in four parameters, a network, inputs, target and a learning rate. 
-It then applies the backpropagation algorithm using the given parameters to update the weights of the network. 
-"""
-def process_batch(args):
-    network, inputs, target, learning_rate = args
-    network.backpropagation(inputs, target, learning_rate)
+    def tokenize(self, review: str) -> list:
+        """
+        Tokenizes a review by splitting it into words and removing punctuation and other non-alphabetic characters.
 
-"""The test_network function takes in a network and a test data set and returns the accuracy of the network on the given data set. 
-The function iterates over the test data and passes the inputs in the network. 
-It uses the network's forward function to get the output and compares the prediction with the label. 
-If the prediction and label match, the function increments the correct counter. 
-Finally, it calculates the accuracy by dividing the correct count by the total number of test data."""
-def test_network(network, test_data):
-    correct = 0
-    for inputs, label in test_data:
-        inputs = [np.array(inputs)]  # Wrap the input in a list
-        outputs, _ = network.forward(inputs)
-        prediction = np.argmax(outputs)
-        if prediction == label:
-            correct += 1
-    return correct / len(test_data)
+        Args:
+            review (str): The review to tokenize.
 
-"""This function applies a grid search to find the best hyperparameters for a recurrent neural network classifier. 
-It takes a data directory containing the train and test data, a maximum number of features, and a list of hyperparameter tuples as inputs. 
-It then preprocesses the data, creates a neural network model with the specified parameters and trains it. 
-Finally, it tests the model on the test data and returns the best parameters and the best accuracy score."""
-def grid_search(data_dir, max_features, hyperparameters):
-    train_data, test_data = load_data(data_dir)
-    train_data = preprocess_data(train_data, max_features)
-    test_data = preprocess_data(test_data, max_features)
-    best_accuracy = 0
-    best_params = None
+        Returns:
+            list: A list of tokens.
+        """
+        review = review.lower()
+        review = re.sub(r"[^a-z ]", "", review)
+        tokens = review.split()
+        return tokens
 
-    for params in hyperparameters:
-        print(f"Testing hyperparameters: {params}")
-        hidden_layers, learning_rate, epochs, batch_size = params
-        network = RecurrentNeuralNetwork(input_size=max_features, hidden_layer_size=hidden_layers[0], output_size=2, learning_rate=learning_rate)
-        train_network(network, train_data, learning_rate, epochs, batch_size)
-        accuracy = test_network(network, test_data)
-        print(f"Accuracy: {accuracy}")
-        if accuracy > best_accuracy:
-            best_accuracy = accuracy
-            best_params = params
+    def create_vocabulary(self, reviews: list) -> tuple:
+        """
+        Creates a vocabulary from the reviews.
 
-    return best_params, best_accuracy
+        Args:
+            reviews (list): A list of tokenized reviews.
 
-"""This code performs grid search to find the best hyperparameter combination for a given dataset. 
-The dataset used is the ACLIMDB dataset which is a dataset of movie reviews. 
-The code downloads and extracts the dataset, preprocesses it, and searches over a range of hyperparameters to find the best combination. 
-The results of the search are printed out along with the best accuracy."""
+        Returns:
+            tuple: A tuple containing the word-to-index and index-to-word dictionaries.
+        """
+        word_counts = Counter()
+
+        for review in reviews:
+            word_counts.update(review)
+
+        most_common_words = word_counts.most_common(self.vocab_size - 2)
+        word_to_index = {"<PAD>": 0, "<UNK>": 1}
+
+        for i, (word, count) in enumerate(most_common_words, start=2):
+            word_to_index[word] = i
+
+        index_to_word = {i: word for word, i in word_to_index.items()}
+
+        return word_to_index, index_to_word
+
+    def convert_to_indices(self, review: list) -> list:
+        """
+        Converts a review from a list of tokens to a list of indices.
+
+        Args:
+            review (list): A list of tokens.
+
+        Returns:
+            list: A list of indices.
+        """
+        indices = []
+
+        for token in review:
+            if token in self.word_to_index:
+                indices.append(self.word_to_index[token])
+            else:
+                indices.append(self.word_to_index["<UNK>"])
+
+        return indices
+
+    def pad_sequences(self, sequences: list) -> np.ndarray:
+        """
+        Pads a list of sequences to a fixed length.
+
+        Args:
+            sequences (list): A list of sequences.
+
+        Returns:
+            np.ndarray: An array of padded sequences.
+        """
+        max_length = max(len(sequence) for sequence in sequences)
+        padded_sequences = np.zeros((len(sequences), max_length), dtype=np.int32)
+
+        for i, sequence in enumerate(sequences):
+            padded_sequences[i, :len(sequence)] = sequence
+
+        return padded_sequences
+
+    def build_model(self) -> None:
+        """
+        Builds the RNN model.
+
+        Returns:
+            None
+        """
+        self.model = RNN(self.vocab_size, self.embedding_size, self.hidden_size)
+
+    def train(self) -> None:
+        """
+        Trains the RNN model.
+
+        Returns:
+            None
+        """
+        # Get the training data
+        train_reviews, train_labels = self.train_data
+
+        # Shuffle the training data
+        indices = np.arange(len(train_reviews))
+        np.random.shuffle(indices)
+        train_reviews = train_reviews[indices]
+        train_labels = train_labels[indices]
+
+        # Split the training data into batches
+        num_batches = len(train_reviews) // self.batch_size
+        train_reviews = np.array_split(train_reviews[:num_batches * self.batch_size], num_batches)
+        train_labels = np.array_split(train_labels[:num_batches * self.batch_size], num_batches)
+
+        # Train the model
+        optimizer = Adam(lr=self.learning_rate)
+        loss_fn = BinaryCrossentropy(from_logits=True)
+
+        for epoch in range(self.num_epochs):
+            epoch_loss = 0
+
+            for batch_reviews, batch_labels in zip(train_reviews, train_labels):
+                with tf.GradientTape() as tape:
+                    logits = self.model(batch_reviews)
+                    loss = loss_fn(batch_labels, logits)
+
+                gradients = tape.gradient(loss, self.model.trainable_variables)
+                optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
+
+                epoch_loss += loss.numpy()
+
+            epoch_loss /= num_batches
+
+            print("Epoch {} loss: {:.4f}".format(epoch + 1, epoch_loss))
+
+    def evaluate(self) -> None:
+        """
+        Evaluates the RNN model on the test data.
+
+        Returns:
+            None
+        """
+        # Get the test data
+        test_reviews, test_labels = self.test_data
+
+        # Evaluate the model
+        logits = self.model(test_reviews)
+        predictions = tf.round(tf.sigmoid(logits))
+        accuracy = np.mean(predictions.numpy() == test_labels)
+
+        print("Test accuracy: {:.2f}%".format(accuracy * 100))
+
+class RNN(tf.keras.Model):
+    """
+    A class for a simple RNN model.
+    """
+    def __init__(self, vocab_size: int, embedding_size: int, hidden_size: int):
+        """
+        Initializes the RNN object.
+
+        Args:
+            vocab_size (int): The size of the vocabulary.
+            embedding_size (int): The size of the word embeddings.
+            hidden_size (int): The size of the hidden state of the RNN.
+        """
+        super(RNN, self).__init__()
+
+        self.embedding = tf.keras.layers.Embedding(vocab_size, embedding_size)
+        self.rnn = tf.keras.layers.SimpleRNN(hidden_size)
+        self.dense = tf.keras.layers.Dense(1)
+
+    def call(self, inputs: tf.Tensor) -> tf.Tensor:
+        """
+        Performs a forward pass through the RNN model.
+
+        Args:
+            inputs (tf.Tensor): The input tensor.
+
+        Returns:
+            tf.Tensor: The output tensor.
+        """
+        x = self.embedding(inputs)
+        x = self.rnn(x)
+        x = self.dense(x)
+        return x
+
 if __name__ == "__main__":
-    data_dir = os.path.join(os.path.expanduser("~"), "Downloads", "aclImdb")
-    dataset_url = "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
+    # Create the SentimentAnalysisRNN object
+    rnn = SentimentAnalysisRNN()
 
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
-    download_and_extract_data(dataset_url, data_dir)
-    max_features = 5000 
-    # Load a smaller subset of the data
-    train_data, test_data = load_data(data_dir, subset_size=500)
+    # Download and extract the IMDB dataset
+    url = "http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
+    destination = rnn.get_downloads_folder()
+    rnn.download_and_extract_data(url, destination)
 
-    train_data = preprocess_data(train_data, max_features)
-    test_data = preprocess_data(test_data, max_features)
+    # Preprocess the data
+    data_dir = os.path.join(destination, "aclImdb")
+    rnn.preprocess_data(data_dir)
 
-    """The below hyperparameters are a collection of varying configurations for a deep neural network. 
-    Each hyperparameter contains four components: the size of the layers in the model, the learning rate, the number of epochs, and the batch size. 
-    The different combinations of layer sizes range from a single layer of 32 nodes to multiple layers of 64 and 128 nodes. The learning rate is set to either 0.1 or 0.01. 
-    The number of epochs is fixed to 10 and the batch size is 32."""
-    hyperparameters = [    ([32], 0.1, 10, 32),
-        ([64], 0.1, 10, 32),
-        ([128], 0.1, 10, 32),
-        ([32, 16], 0.1, 10, 32),
-        ([64, 32], 0.1, 10, 32),
-        ([128, 64], 0.1, 10, 32),
-        ([32, 16], 0.01, 10, 32),
-        ([64, 32], 0.01, 10, 32),
-        ([128, 64], 0.01, 10, 32)
-    ]
+    # Build the model
+    rnn.build_model()
 
-    best_params, best_accuracy = grid_search(data_dir, max_features, hyperparameters)
+    # Train the model
+    rnn.train()
 
-    print("Best hyperparameters:", best_params)
-    print("Best accuracy:", best_accuracy)
-
+    # Evaluate the model
+    rnn.evaluate()

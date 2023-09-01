@@ -1,120 +1,172 @@
-# Sentiment Analysis on IMDB Reviews using Hand-crafted RNN
-## University of Illinois Urbana-Champaign
-### Author: Eric Soderquist
----
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Motivation](#motivation)
-3. [Prerequisites](#prerequisites)
-4. [File Structure](#file-structure)
-5. [Methods Overview](#methods-overview)
-6. [Usage](#usage)
-7. [Theoretical Background](#theoretical-background)
-8. [Performance Metrics](#performance-metrics)
-9. [Contributing](#contributing)
-10. [License](#license)
-11. [Acknowledgements](#acknowledgements)
+
+# Sentiment Analysis on IMDB Reviews using RNNs
+
+## Author
+Eric Soderquist
+
 ## Introduction
+This repository contains a Python implementation of a Recurrent Neural Network (RNN) model for sentiment analysis on the IMDB dataset. Sentiment analysis is a subfield of semantic analysis that focuses on the task of identifying subjective information from text data. Understanding the sentiments expressed in texts like reviews, tweets, or comments can be pivotal for businesses, policymakers, and individuals alike. The model utilizes different configurations of hyperparameters to identify the best set for maximizing classification accuracy.
 
-This project aims to perform sentiment analysis on IMDB movie reviews. 
-Specifically, it employs a hand-crafted Recurrent Neural Network (RNN) for this task. 
-Sentiment Analysis is an important subfield in Natural Language Processing (NLP) 
-that classifies the polarity of a given text.
 
-## Motivation
+<details>
+<summary><strong>Theoretical Background</strong></summary>
 
-With the advent of online platforms, user reviews have become a critical 
-component in decision-making processes for consumers. Analyzing these reviews 
-at scale can offer invaluable insights into public opinion. This project aims to 
-automate the process of sentiment classification for IMDB reviews.
+### Recurrent Neural Networks (RNNs)
+Recurrent Neural Networks (RNNs) are a class of artificial neural networks designed for sequence-based data. Unlike traditional feedforward neural networks, RNNs possess recurrent connections that loop back within the network. This unique architecture allows the network to maintain a 'state' or 'memory' across the sequence, which is invaluable for tasks such as natural language processing, time-series prediction, and, notably, semantic and sentiment analysis.
 
-## Prerequisites
+#### The Basic Recurrent Unit
+The fundamental equation that governs the behavior of a basic recurrent unit is:
 
+\[ h_t = \sigma(W_x x_t + W_h h_{t-1} + b) \]
+
+Where:
+- \( h_t \): Hidden state at time \( t \)
+- \( x_t \): Input at time \( t \)
+- \( h_{t-1} \): Hidden state at time \( t-1 \)
+- \( W_x \), \( W_h \): Weight matrices
+- \( b \): Bias vector
+- \( \sigma \): Activation function (commonly tanh or ReLU)
+
+#### Challenges with Basic RNNs
+While RNNs are powerful, they suffer from issues like the vanishing and exploding gradient problems. These issues limit the network's ability to learn long-range dependencies, making them less effective for complex tasks.
+
+### Long Short-Term Memory (LSTM) Units
+Long Short-Term Memory (LSTM) units are a type of recurrent neural network architecture designed to remember information for extended periods. It was introduced to combat the vanishing gradient problem that plagued traditional RNNs. An LSTM unit is composed of a cell, an input gate, an output gate, and a forget gate. The cell is responsible for "remembering" values over arbitrary time intervals, while the gates regulate the flow of information into and out of the cell.
+
+The governing equations for an LSTM unit are as follows:
+
+\[ f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f) \]
+\[ i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i) \]
+\[ 	ilde{C}_t = 	anh(W_C \cdot [h_{t-1}, x_t] + b_C) \]
+\[ C_t = f_t * C_{t-1} + i_t * 	ilde{C}_t \]
+\[ o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o) \]
+\[ h_t = o_t * 	anh(C_t) \]
+
+Where:
+- \( f_t, i_t, o_t \): Forget, input, and output gates at time \( t \)
+- \( C_t \): Cell state at time \( t \)
+- \( 	ilde{C}_t \): Candidate cell state at time \( t \)
+- \( h_t \): Hidden state at time \( t \)
+
+### Gated Recurrent Units (GRU)
+Gated Recurrent Units (GRU) are a variation of LSTM units, designed to be more computationally efficient. They combine the forget and input gates into a single "update gate" and also merge the cell state and hidden state, resulting in a simpler and more streamlined architecture.
+
+The governing equations for a GRU unit are as follows:
+
+\[ z_t = \sigma(W_z \cdot [h_{t-1}, x_t] + b_z) \]
+\[ r_t = \sigma(W_r \cdot [h_{t-1}, x_t] + b_r) \]
+\[ 	ilde{h}_t = 	anh(W \cdot [r_t * h_{t-1}, x_t] + b) \]
+\[ h_t = (1 - z_t) * h_{t-1} + z_t * 	ilde{h}_t \]
+
+Where:
+- \( z_t \): Update gate at time \( t \)
+- \( r_t \): Reset gate at time \( t \)
+- \( 	ilde{h}_t \): Candidate hidden state at time \( t \)
+- \( h_t \): Hidden state at time \( t \)
+
+### Importance of Semantic Analysis
+Semantic analysis refers to the study of meaning in language. In the context of machine learning and natural language processing, semantic analysis is pivotal for understanding the nuances and context behind a piece of text. This is particularly important in tasks like sentiment analysis, where the objective is not just to understand the syntactic structure but also to capture the underlying sentiment or opinion. By employing RNNs and their advanced variants like LSTMs and GRUs, we can build models that understand the temporal dependencies in text data, thereby capturing the semantic essence more effectively.
+
+</details>
+
+
+### Recurrent Neural Networks (RNNs)
+RNNs are designed for sequence-based data. Unlike traditional feedforward networks, RNNs have connections that loop back within the network, allowing information to persist.
+
+#### The Basic Recurrent Unit
+The fundamental unit of an RNN is defined by the equation:
+
+\[ h_t = \sigma(W_x x_t + W_h h_{t-1} + b) \]
+
+#### Long Short-Term Memory (LSTM) Units
+LSTMs are an improvement over basic RNNs and are defined by the following equations:
+
+\[ f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f) \]
+\[ i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i) \]
+\[ 	ilde{C}_t = 	anh(W_C \cdot [h_{t-1}, x_t] + b_C) \]
+\[ C_t = f_t * C_{t-1} + i_t * 	ilde{C}_t \]
+\[ o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o) \]
+\[ h_t = o_t * 	anh(C_t) \]
+
+</details>
+
+## Table of Contents
+- [Introduction](#introduction)
+- [Theoretical Background](#theoretical-background)
+- [Requirements](#requirements)
+- [Usage](#usage)
+- [Quick Start](#quick-start)
+- [Hyperparameter Tuning](#hyperparameter-tuning)
+- [Results](#results)
+- [Visualization](#visualization)
+- [Future Work](#future-work)
+- [License](#license)
+- [Contact](#contact)
+
+## Requirements
 - Python 3.x
 - NumPy
-- requests
-
-## File Structure
-
-- `SentimentAnalysis_IMDB_RNN.py`: Main Python script containing the model and utility functions.
-
-## Methods Overview
-
-The project uses a hand-crafted Recurrent Neural Network (RNN) for classifying sentiments. 
-Here is a simplified example of how the RNN layer is implemented in the code:
-```python
-def rnn_layer(self, input_data, weights, biases):
-    # Initialize hidden state
-    hidden_state = np.zeros((input_data.shape[0], self.hidden_dim))
-
-    # RNN computation
-    for t in range(input_data.shape[1]):
-        hidden_state = np.tanh(np.dot(input_data[:, t, :], weights) + np.dot(hidden_state, biases))
-    return hidden_state
-```
-The RNN model captures the sequential dependencies in the review texts, making it well-suited for the task.
+- Matplotlib
+- Seaborn
+- Requests
+- tarfile
 
 ## Usage
+1. Clone the repository.
+2. Navigate to the directory where the code is stored.
+3. Run the `SentimentAnalysis_IMDB_RNN.py` script.
 
-1. Clone the repository: 
-```bash
-git clone <repository_url>
-```
-2. Navigate to the project directory: 
-```bash
-cd <project_directory>
-```
-3. Install the required packages: 
-```bash
-pip install -r requirements.txt
-```
-4. Run the main Python script: 
-```bash
+## Quick Start
+```python
+# Clone the repository
+git clone https://github.com/ericsoderquist/SentimentAnalysis_IMDB_RNN.git
+
+# Navigate to the repository
+cd SentimentAnalysis_IMDB_RNN
+
+# Run the script
 python SentimentAnalysis_IMDB_RNN.py
 ```
-5. Optional: For advanced usage, refer to the code comments and documentation.
 
-## Theoretical Background
+## Hyperparameter Tuning
+The model undergoes a series of tests with different hyperparameters to determine the optimal set for achieving the highest accuracy. The hyperparameters include:
+- Layer configurations (e.g., [32], [32, 16])
+- Learning rate (e.g., 0.1, 0.01)
+- Number of epochs (fixed at 10)
+- Batch size (fixed at 32)
 
-Recurrent Neural Networks (RNNs) are specialized for sequence-based tasks. The core idea behind an RNN is to maintain a hidden state \( h_t \) that captures the information of all the previous steps in the sequence. The hidden state at time \( t \) is computed as:
+## Results
+The best-performing model was achieved with the following hyperparameters:
+- Layer configuration: [32, 16]
+- Learning rate: 0.1
+- Epochs: 10
+- Batch size: 32
+- Accuracy: 1.0
 
-\[ h_t = \sigma(W_{hh} h_{t-1} + W_{xh} x_t) \]
+## Visualization
+![Hyperparameter Testing: Accuracy by Layer Configuration and Learning Rate](/assets/visualization.png)
 
-Where \( \sigma \) is the activation function, \( W_{hh} \) and \( W_{xh} \) are weight matrices, \( h_{t-1} \) is the previous hidden state, and \( x_t \) is the input at time \( t \).
-
-This characteristic makes RNNs ideal for sentiment analysis on textual data.
-
-## Performance Metrics
-
-The model's performance is evaluated using the following metrics:
-- Accuracy
-- Precision
-- Recall
-- F1 Score
-
-## Contributing
-
-Contributions are welcome. Please submit a pull request for any enhancements or bug fixes.
+## Future Work
+- Integrate more complex architectures such as LSTM and GRU.
+- Experiment with different optimization algorithms.
+- Perform feature engineering to improve model performance.
 
 ## License
 MIT License
-## Acknowledgements
-Special thanks to the University of Illinois Urbana-Champaign for the academic environment that made this project possible.
-## Known Issues and Limitations
 
-- The model might not perform well on extremely long or short reviews due to the limitations of vanilla RNNs.
-- The current implementation does not include any pre-trained embeddings, which might affect the model's performance.
+## Contact
+For any questions or contributions, please feel free to contact Eric Soderquist.
 
-## References and Further Reading
-
+## References
 - [Understanding LSTM Networks](https://colah.github.io/posts/2015-08-Understanding-LSTMs/)
 
-## Visual Aids
+### Social Impact and Applications
+The advancements in semantic and sentiment analysis through RNNs and their advanced architectures have profound implications beyond academia and industry. Notably, they hold the potential to create meaningful change in the lives of marginalized or specialized groups.
 
-- Architecture Diagram: The architecture for the RNN model can be conceptually summarized as follows:
-```
-Input Layer (Word Embeddings) ---> RNN Layer ---> Output Layer (Sentiment Score)
-```
-- Example Outputs: The chart represents hypothetical sentiment scores that the model might output for a set of IMDB reviews.
-![Example Sentiment Scores for IMDB Reviews](/mnt/data/example_sentiment_scores.png)
-Note: The example output chart is based on hypothetical data and should be validated with actual code outputs.
+#### Disability Aids for Neurodivergent Individuals
+One such application is in the development of assistive technologies for neurodivergent individuals. Semantic analysis can be instrumental in creating more intuitive and responsive communication aids, facilitating a better understanding of nuanced human emotions and intentions. This can greatly enhance the quality of life for individuals who may experience challenges in social interaction and communication.
+
+#### Translation Aids for English Second-Language Learners
+Similarly, these technologies can significantly benefit people who are learning English as a second language. Accurate sentiment and semantic analysis can help in developing advanced translation aids that capture not just the literal meaning of sentences but also the emotional nuances and cultural context, making the language-learning journey more enriching and effective.
+
+These applications underscore the broader societal impact of advancements in this field, driving home the importance of continued research and development.

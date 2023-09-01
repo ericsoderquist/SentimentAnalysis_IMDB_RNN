@@ -155,7 +155,7 @@ The best-performing model was achieved with the following hyperparameters:
 MIT License
 
 ## Contact
-For any questions or contributions, please feel free to contact Eric Soderquist.
+For any questions or contributions, please feel free to contact me.
 
 ## References
 - [Understanding LSTM Networks](https://colah.github.io/posts/2015-08-Understanding-LSTMs/)

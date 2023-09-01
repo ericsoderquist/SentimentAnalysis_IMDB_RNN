@@ -8,22 +8,28 @@ from collections import Counter
 from contextlib import closing
 from multiprocessing import Pool
 
-"""
-This function gets the downloads folder from the system. 
-It expands the user's home directory, then appends "Downloads" to it to get the downloads path.
-"""
 def get_downloads_folder():
+    """
+    Returns the path to the user's Downloads folder.
+
+    Returns:
+    str: The path to the user's Downloads folder.
+    """
     user_home = os.path.expanduser("~")
     downloads_folder = os.path.join(user_home, "Downloads")
     return downloads_folder
 
-"""
-This function is used to download and extract the data from the given URL into the given destination. 
-The URL should be valid and the destination should be an existing directory. 
-The function will check if the dataset is already present in the destination and if so, 
-it will not download it again. If not, then it will download the dataset from the URL and then extract it into the destination.
-"""
 def download_and_extract_data(url, destination):
+    """
+    Downloads and extracts the IMDB dataset from the specified URL to the specified destination directory.
+
+    Args:
+        url (str): The URL of the IMDB dataset.
+        destination (str): The directory where the dataset will be downloaded and extracted.
+
+    Returns:
+        None
+    """
     # Check if the dataset is already downloaded and extracted
     if os.path.exists(os.path.join(destination, "aclImdb")):
         print("Dataset already exists in the specified directory.")
@@ -46,40 +52,107 @@ def download_and_extract_data(url, destination):
                 tar.extract(member, path=destination)
     print("Dataset extracted successfully.")
 
-"""
-This code defines a class 'Neuron' which models a single neuron in a neural network. 
-It is initialized with weights and a bias and has three methods: activation_function(), forward(), 
-and update_weights(). The activation_function() determines how a neuron responds to its inputs, while forward() 
-calculates the weighted sum of its inputs and passes them through the activation_function(). Finally, 
-update_weights() adjusts the neuron's weights and bias according to the delta and learning rate.
-"""
 class Neuron:
+    """
+    A class representing a single neuron in a neural network.
+
+    Attributes:
+    - weights (list): A list of weights for each input to the neuron.
+    - bias (float): A bias term added to the weighted sum of inputs.
+    """
+
     def __init__(self, weights, bias):
+        """
+        Initializes a new instance of the Neuron class.
+
+        Args:
+        - weights (list): A list of weights for each input to the neuron.
+        - bias (float): A bias term added to the weighted sum of inputs.
+        """
         self.weights = weights
         self.bias = bias
 
     def activation_function(self, x):
+        """
+        Applies the ReLU activation function to the given input.
+
+        Args:
+        - x (float): The input to the activation function.
+
+        Returns:
+        - The result of applying the ReLU function to the input.
+        """
         return max(0, x)  # ReLU activation function
 
     def forward(self, inputs):
+        """
+        Computes the output of the neuron for the given inputs.
+
+        Args:
+        - inputs (list): A list of input values to the neuron.
+
+        Returns:
+        - The output of the neuron for the given inputs.
+        """
         weighted_sum = sum(x * w for x, w in zip(inputs, self.weights)) + self.bias
         return self.activation_function(weighted_sum)
 
     def update_weights(self, inputs, delta, learning_rate):
+        """
+        Updates the weights and bias of the neuron based on the given error signal.
+
+        Args:
+        - inputs (list): A list of input values to the neuron.
+        - delta (float): The error signal for the neuron.
+        - learning_rate (float): The learning rate used to update the weights.
+
+        Returns:
+        - None
+        """
         new_weights = []
         for x, w in zip(inputs, self.weights):
             new_weights.append(w - learning_rate * delta * x)
         self.weights = new_weights
         self.bias -= learning_rate * delta
 
-"""This is a class that implements a recurrent neural network (RNN) algorithm. 
-The class takes in parameters such as the input size, hidden layer size, output size, and learning rate. 
-The class then initializes weights and biases for the hidden layers and the output layer. 
-The class has methods such as sigmoid, softmax, forward, and backward. 
-The sigmoid and softmax methods are used to calculate the activation functions of the RNN. 
-The forward method receives input and calculates the output values through the weights and biases of the neural network. 
-The backward method calculates the errors between the output and target values and adjusts the weights and biases accordingly."""
 class RecurrentNeuralNetwork:
+    """
+    A class representing a Recurrent Neural Network (RNN) for sentiment analysis of IMDB movie reviews.
+
+    Attributes:
+    -----------
+    input_size : int
+        The size of the input layer.
+    hidden_layer_size : int
+        The size of the hidden layer.
+    output_size : int
+        The size of the output layer.
+    learning_rate : float
+        The learning rate of the RNN.
+    weights_ih : numpy.ndarray
+        The weights between the input and hidden layers.
+    weights_hh : numpy.ndarray
+        The weights between the hidden layers.
+    weights_ho : numpy.ndarray
+        The weights between the hidden and output layers.
+    biases_h : numpy.ndarray
+        The biases of the hidden layer.
+    biases_o : numpy.ndarray
+        The biases of the output layer.
+
+    Methods:
+    --------
+    sigmoid(x: numpy.ndarray) -> numpy.ndarray:
+        Returns the sigmoid function applied to the input.
+    sigmoid_derivative(x: numpy.ndarray) -> numpy.ndarray:
+        Returns the derivative of the sigmoid function applied to the input.
+    softmax(x: numpy.ndarray) -> numpy.ndarray:
+        Returns the softmax function applied to the input.
+    forward(inputs: List[numpy.ndarray]) -> Tuple[numpy.ndarray, List[numpy.ndarray]]:
+        Performs forward propagation on the RNN and returns the output and hidden layer outputs.
+    backward(inputs: List[numpy.ndarray], hidden_layer_outputs: List[numpy.ndarray], output: numpy.ndarray, target: numpy.ndarray) -> None:
+        Performs backward propagation on the RNN and updates the weights and biases.
+    """
     def __init__(self, input_size, hidden_layer_size, output_size, learning_rate):
         self.input_size = input_size
         self.hidden_layer_size = hidden_layer_size
@@ -94,16 +167,68 @@ class RecurrentNeuralNetwork:
         self.biases_o = np.zeros((output_size, 1))
 
     def sigmoid(self, x):
+        """
+        Returns the sigmoid function applied to the input.
+
+        Parameters:
+        -----------
+        x : numpy.ndarray
+            The input to the sigmoid function.
+
+        Returns:
+        --------
+        numpy.ndarray:
+            The output of the sigmoid function.
+        """
         return 1 / (1 + np.exp(-x))
 
     def sigmoid_derivative(self, x):
+        """
+        Returns the derivative of the sigmoid function applied to the input.
+
+        Parameters:
+        -----------
+        x : numpy.ndarray
+            The input to the sigmoid function.
+
+        Returns:
+        --------
+        numpy.ndarray:
+            The derivative of the sigmoid function.
+        """
         return x * (1 - x)
 
     def softmax(self, x):
+        """
+        Returns the softmax function applied to the input.
+
+        Parameters:
+        -----------
+        x : numpy.ndarray
+            The input to the softmax function.
+
+        Returns:
+        --------
+        numpy.ndarray:
+            The output of the softmax function.
+        """
         exp_x = np.exp(x - np.max(x))
         return exp_x / np.sum(exp_x, axis=0)
 
     def forward(self, inputs):
+        """
+        Performs forward propagation on the RNN and returns the output and hidden layer outputs.
+
+        Parameters:
+        -----------
+        inputs : List[numpy.ndarray]
+            The inputs to the RNN.
+
+        Returns:
+        --------
+        Tuple[numpy.ndarray, List[numpy.ndarray]]:
+            The output of the RNN and the hidden layer outputs.
+        """
         hidden_layer_outputs = []
         hidden = np.zeros((self.hidden_layer_size, 1))
         for i in range(len(inputs)):
@@ -114,6 +239,24 @@ class RecurrentNeuralNetwork:
         return output, hidden_layer_outputs
 
     def backward(self, inputs, hidden_layer_outputs, output, target):
+        """
+        Performs backward propagation on the RNN and updates the weights and biases.
+
+        Parameters:
+        -----------
+        inputs : List[numpy.ndarray]
+            The inputs to the RNN.
+        hidden_layer_outputs : List[numpy.ndarray]
+            The outputs of the hidden layer.
+        output : numpy.ndarray
+            The output of the RNN.
+        target : numpy.ndarray
+            The target output of the RNN.
+
+        Returns:
+        --------
+        None
+        """
         output_error = output - target
         delta_weights_ho = np.dot(output_error, hidden_layer_outputs[-1].T)
         delta_biases_o = output_error
@@ -141,22 +284,47 @@ class RecurrentNeuralNetwork:
         self.weights_ho -= self.learning_rate * delta_weights_ho
         self.biases_o -= self.learning_rate * delta_biases_o
 
-"""The preprocess_data function takes two parameters, data and max_features which indicates the maximum number of features for the embedding.
-First, the function cleans the text by removing any HTML tags and punctuation and by making all words lowercase. 
-It then counts the words and bigrams in the text to determine the most frequent words or bigrams. 
-Next, the most common words and bigrams are collected and stored in a word_to_index dictionary. 
-Finally, a feature vector is created by assigning a value of 1 to any of the most frequent words/bigrams found in the text. 
-The feature vector is then stored along with the corresponding label in a list. 
-This list is what is returned by the function."""
-def preprocess_data(data, max_features):
-    def clean_text(text):
+from typing import List, Tuple
+from collections import Counter
+import re
+
+def preprocess_data(data: List[Tuple[str, int]], max_features: int) -> List[Tuple[List[int], int]]:
+    """
+    Preprocesses the given data for sentiment analysis using a bag-of-words approach with bigrams.
+
+    Args:
+        data: A list of tuples, where each tuple contains a string representing a review and an integer representing its sentiment label (0 for negative, 1 for positive).
+        max_features: An integer representing the maximum number of features to use in the bag-of-words representation.
+
+    Returns:
+        A list of tuples, where each tuple contains a list of integers representing the feature vector for a review and its corresponding sentiment label.
+    """
+    def clean_text(text: str) -> List[str]:
+        """
+        Cleans the given text by removing HTML tags, non-alphabetic characters, and converting to lowercase.
+
+        Args:
+            text: A string representing the text to clean.
+
+        Returns:
+            A list of strings representing the cleaned words.
+        """
         text = re.sub('<.*?>', ' ', text)
         text = re.sub('[^a-zA-Z]', ' ', text)
         text = text.lower()
         words = text.split()
         return words
 
-    def get_bigrams(words):
+    def get_bigrams(words: List[str]) -> List[str]:
+        """
+        Returns a list of bigrams for the given list of words.
+
+        Args:
+            words: A list of strings representing the words to generate bigrams from.
+
+        Returns:
+            A list of strings representing the bigrams.
+        """
         return [f"{w1}_{w2}" for w1, w2 in zip(words[:-1], words[1:])]
 
     word_counts = Counter()
@@ -182,11 +350,18 @@ def preprocess_data(data, max_features):
         processed_data.append((feature_vector, label))
     return processed_data
 
-"""The function "load_data" loads movie reviews from a given data directory. 
-It takes two parameters - the data directory and a subset size (optional). 
-It then extracts positive and negative reviews from the train and test subdirectories and 
-returns a tuple containing a list of tuples (text and label) for the train and test data."""
 def load_data(data_dir, subset_size=None):
+    """
+    Load the IMDB dataset from the given directory.
+
+    Args:
+        data_dir (str): The directory containing the IMDB dataset.
+        subset_size (int, optional): The maximum number of reviews to load from each subset.
+
+    Returns:
+        tuple: A tuple containing two lists of tuples. The first list contains the training data, and the second list
+        contains the test data. Each tuple in the lists contains a review text and a label (0 for negative, 1 for positive).
+    """
     def load_reviews_from_dir(directory, label):
         reviews = []
         for filename in os.listdir(directory):
@@ -195,7 +370,7 @@ def load_data(data_dir, subset_size=None):
                 reviews.append((text, label))
             if subset_size is not None and len(reviews) >= subset_size:
                 break # Stop loading reviews if we've reached the subset size
-            return reviews
+        return reviews
 
     train_pos_dir = os.path.join(data_dir, 'train', 'pos')
     train_neg_dir = os.path.join(data_dir, 'train', 'neg')
@@ -211,13 +386,20 @@ def load_data(data_dir, subset_size=None):
     test_data = test_pos + test_neg
     return train_data, test_data
 
-"""This function is used to train the specified network using the given training data. 
-The parameters to this function are the network, training data, learning rate, total epochs and batch size. 
-The network is trained by shuffling the data and iterating over the batches of data. 
-For each batch, the input data and target data is split and then processed in a separate process using the pool.map() function. 
-The learning rate is applied to the network after each batch is processed. 
-The function prints out the status of the epochs that have been completed."""
 def train_network(network, training_data, learning_rate, epochs, batch_size):
+    """
+    Trains a neural network using the given training data.
+
+    Args:
+        network (object): The neural network to train.
+        training_data (list): A list of tuples containing input and target data.
+        learning_rate (float): The learning rate to use during training.
+        epochs (int): The number of epochs to train for.
+        batch_size (int): The batch size to use during training.
+
+    Returns:
+        None
+    """
     num_batches = len(training_data) // batch_size
     pool = Pool()
     for epoch in range(epochs):
@@ -233,20 +415,30 @@ def train_network(network, training_data, learning_rate, epochs, batch_size):
 
         print(f"Epoch {epoch + 1} completed")
 
-"""
-This function takes in four parameters, a network, inputs, target and a learning rate. 
-It then applies the backpropagation algorithm using the given parameters to update the weights of the network. 
-"""
 def process_batch(args):
+    """
+    Trains the network using backpropagation on a batch of inputs and targets.
+
+    Args:
+        args (tuple): A tuple containing the network, inputs, target, and learning rate.
+
+    Returns:
+        None
+    """
     network, inputs, target, learning_rate = args
     network.backpropagation(inputs, target, learning_rate)
 
-"""The test_network function takes in a network and a test data set and returns the accuracy of the network on the given data set. 
-The function iterates over the test data and passes the inputs in the network. 
-It uses the network's forward function to get the output and compares the prediction with the label. 
-If the prediction and label match, the function increments the correct counter. 
-Finally, it calculates the accuracy by dividing the correct count by the total number of test data."""
 def test_network(network, test_data):
+    """
+    Test the given network on the provided test data and return the accuracy.
+
+    Args:
+        network (RNN): The RNN network to be tested.
+        test_data (list): A list of tuples containing the inputs and labels for the test data.
+
+    Returns:
+        float: The accuracy of the network on the test data.
+    """
     correct = 0
     for inputs, label in test_data:
         inputs = [np.array(inputs)]  # Wrap the input in a list
@@ -256,11 +448,24 @@ def test_network(network, test_data):
             correct += 1
     return correct / len(test_data)
 
-"""This function applies a grid search to find the best hyperparameters for a recurrent neural network classifier. 
-It takes a data directory containing the train and test data, a maximum number of features, and a list of hyperparameter tuples as inputs. 
-It then preprocesses the data, creates a neural network model with the specified parameters and trains it. 
-Finally, it tests the model on the test data and returns the best parameters and the best accuracy score."""
 def grid_search(data_dir, max_features, hyperparameters):
+    """
+    Perform a grid search over the given hyperparameters to find the best set of hyperparameters for a recurrent neural network
+    trained on sentiment analysis data.
+
+    Args:
+    - data_dir (str): The directory containing the sentiment analysis data.
+    - max_features (int): The maximum number of features to use when preprocessing the data.
+    - hyperparameters (list): A list of tuples, where each tuple contains the hyperparameters to test. The hyperparameters
+    are (hidden_layers, learning_rate, epochs, batch_size), where hidden_layers is a list of integers representing the
+    number of neurons in each hidden layer, learning_rate is a float representing the learning rate of the network,
+    epochs is an integer representing the number of epochs to train the network for, and batch_size is an integer
+    representing the batch size to use during training.
+
+    Returns:
+    - best_params (tuple): The set of hyperparameters that achieved the highest accuracy on the test data.
+    - best_accuracy (float): The accuracy achieved by the network using the best set of hyperparameters.
+    """
     train_data, test_data = load_data(data_dir)
     train_data = preprocess_data(train_data, max_features)
     test_data = preprocess_data(test_data, max_features)
@@ -280,10 +485,6 @@ def grid_search(data_dir, max_features, hyperparameters):
 
     return best_params, best_accuracy
 
-"""This code performs grid search to find the best hyperparameter combination for a given dataset. 
-The dataset used is the ACLIMDB dataset which is a dataset of movie reviews. 
-The code downloads and extracts the dataset, preprocesses it, and searches over a range of hyperparameters to find the best combination. 
-The results of the search are printed out along with the best accuracy."""
 if __name__ == "__main__":
     data_dir = os.path.join(os.path.expanduser("~"), "Downloads", "aclImdb")
     dataset_url = "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
@@ -298,10 +499,6 @@ if __name__ == "__main__":
     train_data = preprocess_data(train_data, max_features)
     test_data = preprocess_data(test_data, max_features)
 
-    """The below hyperparameters are a collection of varying configurations for a deep neural network. 
-    Each hyperparameter contains four components: the size of the layers in the model, the learning rate, the number of epochs, and the batch size. 
-    The different combinations of layer sizes range from a single layer of 32 nodes to multiple layers of 64 and 128 nodes. The learning rate is set to either 0.1 or 0.01. 
-    The number of epochs is fixed to 10 and the batch size is 32."""
     hyperparameters = [    ([32], 0.1, 10, 32),
         ([64], 0.1, 10, 32),
         ([128], 0.1, 10, 32),

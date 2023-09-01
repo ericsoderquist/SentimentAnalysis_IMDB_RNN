@@ -9,7 +9,31 @@ from contextlib import closing
 from multiprocessing import Pool
 
 """
-Eric Soderquist
+------------------------------------------------------------------------
+Author: Eric Soderquist
+Date: 2023-09-01
+Purpose: 
+    This script is designed to perform sentiment analysis on the IMDB dataset. 
+    It incorporates basic Python libraries for data manipulation and extraction, 
+    including NumPy for numerical operations and 'requests' for data retrieval. 
+    The script also employs Python's multiprocessing library to parallelize certain tasks 
+    for computational efficiency.
+
+Key Contributions:
+    - Extraction and preprocessing of the IMDB dataset.
+    - Implementation of a sentiment analysis model.
+    - Utilization of multiprocessing for optimized data processing.
+    - Comprehensive evaluation metrics including accuracy, precision, recall, F1-score, 
+      and AUC-ROC for model evaluation.
+
+Dependencies:
+    - NumPy for numerical operations.
+    - 'requests' for fetching data.
+    - 'tarfile' and 'os' for file and directory manipulation.
+    - 're' for regular expressions.
+    - 'random' for random number generation.
+    - 'multiprocessing' for parallel processing.
+------------------------------------------------------------------------
 """
 
 def get_downloads_folder():

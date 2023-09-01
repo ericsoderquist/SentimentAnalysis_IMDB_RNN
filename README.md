@@ -144,7 +144,7 @@ The best-performing model was achieved with the following hyperparameters:
 - Accuracy: 1.0
 
 ## Visualization
-![Hyperparameter Testing: Accuracy by Layer Configuration and Learning Rate](/assets/visualization.png)
+![Hyperparameter Testing: Accuracy by Layer Configuration and Learning Rate](/assets/visualization.jpg)
 
 ## Future Work
 - Integrate more complex architectures such as LSTM and GRU.

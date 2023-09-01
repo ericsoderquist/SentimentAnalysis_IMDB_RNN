@@ -397,25 +397,57 @@ def process_batch(args):
     network, inputs, target, learning_rate = args
     network.backpropagation(inputs, target, learning_rate)
 
+
+from sklearn.metrics import precision_score, recall_score, f1_score, roc_curve, roc_auc_score
+
 def test_network(network, test_data):
-    """
-    Tests the given neural network on the provided test data and returns the accuracy.
+    '''
+    Tests the given neural network on the provided test data and returns various performance metrics.
+    Performance metrics include: Accuracy, Precision, Recall, F1-Score, and AUC (Area Under the Curve).
 
     Args:
         network (NeuralNetwork): The neural network to be tested.
         test_data (list): A list of tuples containing the inputs and labels for each test case.
 
     Returns:
-        float: The accuracy of the neural network on the test data, as a value between 0 and 1.
-    """
+        dict: A dictionary containing various performance metrics.
+    '''
     correct = 0
+    true_labels = []
+    predicted_labels = []
+    predicted_scores = []
+
     for inputs, label in test_data:
         inputs = [np.array(inputs)]  # Wrap the input in a list
         outputs, _ = network.forward(inputs)
         prediction = np.argmax(outputs)
+        predicted_scores.append(outputs[1])  # Assuming the second output corresponds to the 'positive' class
+        true_labels.append(label)
+        predicted_labels.append(prediction)
         if prediction == label:
             correct += 1
-    return correct / len(test_data)
+
+    # Calculate additional performance metrics
+    accuracy = correct / len(test_data)
+    precision = precision_score(true_labels, predicted_labels)
+    recall = recall_score(true_labels, predicted_labels)
+    f1 = f1_score(true_labels, predicted_labels)
+    fpr, tpr, _ = roc_curve(true_labels, predicted_scores)
+    auc = roc_auc_score(true_labels, predicted_scores)
+
+    metrics = {
+        'Accuracy': accuracy,
+        'Precision': precision,
+        'Recall': recall,
+        'F1-Score': f1,
+        'FPR': fpr,
+        'TPR': tpr,
+        'AUC': auc
+    }
+
+    return metrics
+
+
 
 def grid_search(data_dir, max_features, hyperparameters):
     """
@@ -441,12 +473,16 @@ def grid_search(data_dir, max_features, hyperparameters):
         hidden_layers, learning_rate, epochs, batch_size = params
         network = RecurrentNeuralNetwork(input_size=max_features, hidden_layer_size=hidden_layers[0], output_size=2, learning_rate=learning_rate)
         train_network(network, train_data, learning_rate, epochs, batch_size)
-        accuracy = test_network(network, test_data)
+        metrics = test_network(network, test_data)
+        accuracy = metrics['Accuracy']
         print(f"Accuracy: {accuracy}")
-        if accuracy > best_accuracy:
+    print(f"Precision: {metrics['Precision']})")
+    print(f"Recall: {metrics['Recall']}")
+    print(f"F1-Score: {metrics['F1-Score']}")
+    print(f"AUC: {metrics['AUC']})")
+    if accuracy > best_accuracy:
             best_accuracy = accuracy
             best_params = params
-
     return best_params, best_accuracy
 
 """This code performs grid search to find the best hyperparameter combination for a given dataset. 

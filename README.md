@@ -1,9 +1,7 @@
-
-
 # Sentiment Analysis on IMDB Reviews using RNNs
 
 ## Author
-Eric Soderquist
+[Eric Soderquist](mailto:eys3@illinois.edu)
 
 ## Introduction
 This repository contains a Python implementation of a Recurrent Neural Network (RNN) model for sentiment analysis on the IMDB dataset. Sentiment analysis is a subfield of semantic analysis that focuses on the task of identifying subjective information from text data. Understanding the sentiments expressed in texts like reviews, tweets, or comments can be pivotal for businesses, policymakers, and individuals alike. The model utilizes different configurations of hyperparameters to identify the best set for maximizing classification accuracy.
@@ -24,15 +22,15 @@ The Recurrent Neural Network (RNN) model used in this project consists of the fo
 #### The Basic Recurrent Unit
 The fundamental equation that governs the behavior of a basic recurrent unit is:
 
-\[ h_t = \sigma(W_x x_t + W_h h_{t-1} + b) \]
+``` h_t = \sigma(W_x x_t + W_h h_{t-1} + b) ```
 
 Where:
-- \( h_t \): Hidden state at time \( t \)
-- \( x_t \): Input at time \( t \)
-- \( h_{t-1} \): Hidden state at time \( t-1 \)
-- \( W_x \), \( W_h \): Weight matrices
-- \( b \): Bias vector
-- \( \sigma \): Activation function (commonly tanh or ReLU)
+- ` h_t `: Hidden state at time ` t `
+- ` x_t `: Input at time ` t `
+- ` h_{t-1} `: Hidden state at time ` t-1 `
+- ` W_x `, ` W_h `: Weight matrices
+- ` b `: Bias vector
+- ` \sigma `: Activation function (commonly tanh or ReLU)
 
 #### Challenges with Basic RNNs
 While RNNs are powerful, they suffer from issues like the vanishing and exploding gradient problems. These issues limit the network's ability to learn long-range dependencies, making them less effective for complex tasks.
@@ -42,34 +40,34 @@ Long Short-Term Memory (LSTM) units are a type of recurrent neural network archi
 
 The governing equations for an LSTM unit are as follows:
 
-\[ f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f) \]
-\[ i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i) \]
-\[ 	ilde{C}_t = 	anh(W_C \cdot [h_{t-1}, x_t] + b_C) \]
-\[ C_t = f_t * C_{t-1} + i_t * 	ilde{C}_t \]
-\[ o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o) \]
-\[ h_t = o_t * 	anh(C_t) \]
+``` f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f) ```
+``` i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i) ```
+``` \tilde{C}_t = \tanh(W_C \cdot [h_{t-1}, x_t] + b_C) ```
+``` C_t = f_t * C_{t-1} + i_t * \tilde{C}_t ```
+``` o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o) ```
+``` h_t = o_t * \tanh(C_t) ```
 
 Where:
-- \( f_t, i_t, o_t \): Forget, input, and output gates at time \( t \)
-- \( C_t \): Cell state at time \( t \)
-- \( 	ilde{C}_t \): Candidate cell state at time \( t \)
-- \( h_t \): Hidden state at time \( t \)
+- `f_t, i_t, o_t`: Forget, input, and output gates at time `t`
+- `C_t`: Cell state at time `t`
+- `\tilde{C}_t`: Candidate cell state at time `t`
+- `h_t`: Hidden state at time `t`
 
 ### Gated Recurrent Units (GRU)
 Gated Recurrent Units (GRU) are a variation of LSTM units, designed to be more computationally efficient. They combine the forget and input gates into a single "update gate" and also merge the cell state and hidden state, resulting in a simpler and more streamlined architecture.
 
 The governing equations for a GRU unit are as follows:
 
-\[ z_t = \sigma(W_z \cdot [h_{t-1}, x_t] + b_z) \]
-\[ r_t = \sigma(W_r \cdot [h_{t-1}, x_t] + b_r) \]
-\[ 	ilde{h}_t = 	anh(W \cdot [r_t * h_{t-1}, x_t] + b) \]
-\[ h_t = (1 - z_t) * h_{t-1} + z_t * 	ilde{h}_t \]
+``` z_t = \sigma(W_z \cdot [h_{t-1}, x_t] + b_z) ```
+``` r_t = \sigma(W_r \cdot [h_{t-1}, x_t] + b_r) ```
+``` \tilde{h}_t = \tanh(W \cdot [r_t * h_{t-1}, x_t] + b) ```
+``` h_t = (1 - z_t) * h_{t-1} + z_t * \tilde{h}_t ```
 
 Where:
-- \( z_t \): Update gate at time \( t \)
-- \( r_t \): Reset gate at time \( t \)
-- \( 	ilde{h}_t \): Candidate hidden state at time \( t \)
-- \( h_t \): Hidden state at time \( t \)
+- `z_t`: Update gate at time `t`
+- `r_t`: Reset gate at time `t`
+- `\tilde{h}_t`: Candidate hidden state at time `t`
+- `h_t`: Hidden state at time `t`
 
 ### Importance of Semantic Analysis
 Semantic analysis refers to the study of meaning in language. In the context of machine learning and natural language processing, semantic analysis is pivotal for understanding the nuances and context behind a piece of text. This is particularly important in tasks like sentiment analysis, where the objective is not just to understand the syntactic structure but also to capture the underlying sentiment or opinion. By employing RNNs and their advanced variants like LSTMs and GRUs, we can build models that understand the temporal dependencies in text data, thereby capturing the semantic essence more effectively.
@@ -83,17 +81,17 @@ RNNs are designed for sequence-based data. Unlike traditional feedforward networ
 #### The Basic Recurrent Unit
 The fundamental unit of an RNN is defined by the equation:
 
-\[ h_t = \sigma(W_x x_t + W_h h_{t-1} + b) \]
+``` h_t = \sigma(W_x x_t + W_h h_{t-1} + b) ```
 
 #### Long Short-Term Memory (LSTM) Units
 LSTMs are an improvement over basic RNNs and are defined by the following equations:
 
-\[ f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f) \]
-\[ i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i) \]
-\[ 	ilde{C}_t = 	anh(W_C \cdot [h_{t-1}, x_t] + b_C) \]
-\[ C_t = f_t * C_{t-1} + i_t * 	ilde{C}_t \]
-\[ o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o) \]
-\[ h_t = o_t * 	anh(C_t) \]
+``` f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f) ```
+``` i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i) ```
+``` \tilde{C}_t = \tanh(W_C \cdot [h_{t-1}, x_t] + b_C) ```
+``` C_t = f_t * C_{t-1} + i_t * \tilde{C}_t ```
+``` o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o) ```
+``` h_t = o_t * \tanh(C_t) ```
 
 </details>
 
@@ -172,7 +170,7 @@ The model's performance is evaluated using the following metrics:
 MIT License
 
 ## Contact
-For any questions or contributions, please feel free to contact me.
+For any questions or contributions, please feel free to contact me. - [Eric Soderquist](mailto:eys3@illinois.edu)
 
 ## References
 - [Understanding LSTM Networks](https://colah.github.io/posts/2015-08-Understanding-LSTMs/)
@@ -187,4 +185,3 @@ One such application is in the development of assistive technologies for neurodi
 Similarly, these technologies can significantly benefit people who are learning English as a second language. Accurate sentiment and semantic analysis can help in developing advanced translation aids that capture not just the literal meaning of sentences but also the emotional nuances and cultural context, making the language-learning journey more enriching and effective.
 
 These applications underscore the broader societal impact of advancements in this field, driving home the importance of continued research and development.
-

@@ -200,13 +200,6 @@ The best-performing model was achieved with the following hyperparameters:
 ![Hyperparameter Testing: Model Performance Metrics](/model_performance_infographic.png)
 
 
-## Future Work
-
-- Integrate more complex architectures such as LSTM and GRU.
-- Experiment with different optimization algorithms.
-- Perform feature engineering to improve model performance.
-
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](/LICENSE) file for details.

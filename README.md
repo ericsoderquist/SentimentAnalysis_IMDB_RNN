@@ -42,7 +42,7 @@ The governing equations for an LSTM unit are as follows:
 
 $i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)$
 
-$\tilde{C}_t$ 
+$\tilde{C}_t$
 
 $= tanh(W_C \cdot [h_{t-1}, x_t] + b_C)$
 
@@ -97,6 +97,7 @@ $h_t = \sigma(W_x x_t + W_h h_{t-1} + b)$
 LSTMs are an improvement over basic RNNs and are defined by the following equations:
 
 $f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)$
+
 $i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)$
 
 $\tilde{C}_t$
@@ -104,7 +105,9 @@ $\tilde{C}_t$
 $= \tanh(W_C \cdot [h_{t-1}, x_t] + b_C)$
 
 $C_t = f_t * C_{t-1} + i_t * \tilde{C}_t$
+
 $o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o)$
+
 $h_t = o_t * \tanh(C_t)$
 
 </details>

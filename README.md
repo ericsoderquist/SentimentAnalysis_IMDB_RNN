@@ -40,12 +40,15 @@ Long Short-Term Memory (LSTM) units are a type of recurrent neural network archi
 
 The governing equations for an LSTM unit are as follows:
 
-$f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)$
 $i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)$
-$\tilde{C}_t = \tanh(W_C \cdot [h_{t-1}, x_t] + b_C)$
+
+$\tilde{C}_t = tanh(W_C \cdot [h_{t-1}, x_t] + b_C)$
+
 $C_t = f_t * C_{t-1} + i_t * \tilde{C}_t$
+
 $o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o)$
-$h_t = o_t * \tanh(C_t)$
+
+$h_t = o_t * tanh(C_t)$
 
 Where:
 - $f_t, i_t, o_t$: Forget, input, and output gates at time $t$
@@ -59,8 +62,11 @@ Gated Recurrent Units (GRU) are a variation of LSTM units, designed to be more c
 The governing equations for a GRU unit are as follows:
 
 $z_t = \sigma(W_z \cdot [h_{t-1}, x_t] + b_z)$
+
 $r_t = \sigma(W_r \cdot [h_{t-1}, x_t] + b_r)$
-$\tilde{h}_t = \tanh(W \cdot [r_t * h_{t-1}, x_t] + b)$
+
+$\tilde{C}_t = tanh(W_C \cdot [h_{t-1}, x_t] + b_C)$
+
 $h_t = (1 - z_t) * h_{t-1} + z_t * \tilde{h}_t$
 
 Where:

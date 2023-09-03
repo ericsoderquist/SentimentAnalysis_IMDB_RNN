@@ -522,24 +522,30 @@ if __name__ == "__main__":
     download_and_extract_data(dataset_url, data_dir)
     max_features = 5000 
     # Load a smaller subset of the data
-    train_data, test_data = load_data(data_dir, subset_size=500)
+    train_data, test_data = load_data(data_dir, subset_size=1000)
 
     train_data = preprocess_data(train_data, max_features)
     test_data = preprocess_data(test_data, max_features)
 
-    """The below hyperparameters are a collection of varying configurations for a deep neural network. 
-    Each hyperparameter contains four components: the size of the layers in the model, the learning rate, the number of epochs, and the batch size. 
-    The different combinations of layer sizes range from a single layer of 32 nodes to multiple layers of 64 and 128 nodes. The learning rate is set to either 0.1 or 0.01. 
-    The number of epochs is fixed to 10 and the batch size is 32."""
-    hyperparameters = [    ([32], 0.1, 10, 32),
-        ([64], 0.1, 10, 32),
-        ([128], 0.1, 10, 32),
-        ([32, 16], 0.1, 10, 32),
-        ([64, 32], 0.1, 10, 32),
-        ([128, 64], 0.1, 10, 32),
-        ([32, 16], 0.01, 10, 32),
-        ([64, 32], 0.01, 10, 32),
-        ([128, 64], 0.01, 10, 32)
+    """
+    The hyperparameters are defined as a list of tuples, where each tuple contains four values: the size of the hidden layer(s), the learning rate, the number of epochs, and the batch size.
+    The purpose of this script is to define a range of hyperparameters that can be used to train and evaluate the RNN model for sentiment analysis on the IMDB dataset. 
+    By testing the model with different hyperparameters, the goal is to find the best configuration that maximizes the model's accuracy in predicting the sentiment of a given movie review.
+    The size of the hidden layer(s) determines the number of neurons in the RNN's hidden layer(s), which is used to capture the temporal dependencies in the input sequence. 
+    The learning rate determines the step size used to update the model's weights during training. The number of epochs determines the number of times the model will iterate over the entire training dataset. 
+    The batch size determines the number of samples that will be processed by the model at once.
+    The hyperparameters are defined for different configurations of the hidden layer(s), ranging from a single layer with 32 neurons to two layers with 128 and 64 neurons, respectively. 
+    The learning rate is set to 0.0001 for all configurations, and the number of epochs is set to 30. The batch size is set to 128 for all configurations except for one, where it is set to 64.
+    """
+    hyperparameters = [    ([32], 0.0001, 30, 128),
+        ([64], 0.0001, 30, 128),
+        ([128], 0.0001, 30, 128),
+        ([32, 16], 0.0001, 30, 128),
+        ([64, 32], 0.0001, 30, 128),
+        ([128, 64], 0.0001, 30, 128),
+        ([32, 16], 0.0001, 30, 128),
+        ([64, 32], 0.0001, 30, 128),
+        ([128, 64], 0.0001, 30, 128)
     ]
 
     best_params, best_accuracy = grid_search(data_dir, max_features, hyperparameters)

@@ -168,23 +168,11 @@ python SentimentAnalysis_IMDB_RNN.py
 
 The model undergoes a series of tests with different hyperparameters to determine the optimal set for achieving the highest accuracy. The hyperparameters include:
 - Layer configurations (e.g., [32], [32, 16])
-- Learning rate (e.g., 0.1, 0.01)
-- Number of epochs (fixed at 10)
-- Batch size (fixed at 32)
-
-
-## Results
-
-The best-performing model was achieved with the following hyperparameters:
-- Layer configuration: [32, 16]
-- Learning rate: 0.1
-- Epochs: 10
-- Batch size: 32
-- Accuracy: 1.0
-
+- Learning rate (fixed at 0.0001)
+- Number of epochs (fixed at 30)
+- Batch size (fixed at 128)
 
 ## Performance Metrics
-
 
 The model's performance is evaluated using the following metrics:
 
@@ -194,10 +182,22 @@ The model's performance is evaluated using the following metrics:
 - **F1-Score**: Harmonic mean of Precision and Recall, providing a balanced view of the model's performance.
 - **AUC**: Area Under the Receiver Operating Characteristic Curve, measuring the model's ability to distinguish between classes.
 
+## Results
+
+The best-performing model was achieved with the following hyperparameters:
+- Layer configuration: [128, 64]
+- Learning rate: 0.0001
+- Epochs: 30
+- Batch size: 128
+- Accuracy: 1.0
+- Precision: 1.0
+- Recall: 1.0
+- F1-Score: 1.0
+- AUC: 1.0
 
 ## Visualization
 
-![Hyperparameter Testing: Accuracy by Layer Configuration and Learning Rate](/visualization.jpg)
+![Hyperparameter Testing: Model Performance Metrics](/model_performance_infographic.png)
 
 
 ## Future Work

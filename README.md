@@ -22,7 +22,7 @@ The Recurrent Neural Network (RNN) model used in this project consists of the fo
 #### The Basic Recurrent Unit
 The fundamental equation that governs the behavior of a basic recurrent unit is:
 
-``` h_t = \sigma(W_x x_t + W_h h_{t-1} + b) ```
+$$ h_t = \sigma(W_x x_t + W_h h_{t-1} + b) $$
 
 Where:
 - ` h_t `: Hidden state at time ` t `

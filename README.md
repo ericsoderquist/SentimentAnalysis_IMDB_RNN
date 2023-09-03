@@ -139,14 +139,18 @@ $h_t = o_t * \tanh(C_t)$
 3. Run the `SentimentAnalysis_IMDB_RNN.py` script.
 
 ## Quick Start
-# Clone the repository
+## Clone the repository
+```bash
 git clone https://github.com/ericsoderquist/SentimentAnalysis_IMDB_RNN.git
-
-# Navigate to the repository
+```
+## Navigate to the repository
+```bash
 cd SentimentAnalysis_IMDB_RNN
-
-# Run the script
+```
+## Run the script
+```bash
 python SentimentAnalysis_IMDB_RNN.py
+```
 
 ## Hyperparameter Tuning
 The model undergoes a series of tests with different hyperparameters to determine the optimal set for achieving the highest accuracy. The hyperparameters include:

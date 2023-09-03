@@ -167,7 +167,7 @@ The model's performance is evaluated using the following metrics:
 - Perform feature engineering to improve model performance.
 
 ## License
-MIT License
+This project is licensed under the MIT License - see the [LICENSE](/LICENSE) file for details.
 
 ## Contact
 For any questions or contributions, please feel free to contact me. - [Eric Soderquist](mailto:eys3@illinois.edu)

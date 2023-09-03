@@ -42,7 +42,7 @@ The governing equations for an LSTM unit are as follows:
 
 $i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)$
 
-$\tilde{C}_t = tanh(W_C \cdot [h_{t-1}, x_t] + b_C)$
+$\tilde{C}_t= \tanh(W_C \cdot [h_{t-1}, x_t] + b_C)$
 
 $C_t = f_t * C_{t-1} + i_t * \tilde{C}_t$
 
